@@ -17,19 +17,21 @@ const {
 	MONGO_PORT,
 } = CONFIG;
 
+const mongoConnectionString = `mongodb://${MONGO_USER}:${MONGO_PASS}@${MONGO_HOST}:${MONGO_PORT}/app?authSource=admin`;
+const redisConnectionString = `redis://${REDIS_URL}:${REDIS_PORT}`;
+
 const { createClient } = require('redis');
 const session = require('express-session');
 let RedisStore = require('connect-redis')(session);
 let redisClient = createClient({
-	url: `redis://${REDIS_URL}:${REDIS_PORT}`,
+	url: redisConnectionString,
 	legacyMode: true,
 });
 
-const connectionString = `mongodb://${MONGO_USER}:${MONGO_PASS}@${MONGO_HOST}:${MONGO_PORT}/app?authSource=admin`;
-
 const connectMongoWithRetry = async () => {
 	try {
-		await mongoose.connect(connectionString);
+		console.log('Mongo connection string:', mongoConnectionString);
+		await mongoose.connect(mongoConnectionString);
 		console.log('Successfully connected to mongo.');
 	} catch (error) {
 		console.log(error);
@@ -39,6 +41,7 @@ const connectMongoWithRetry = async () => {
 
 const connectToRedisWithRetry = async () => {
 	try {
+		console.log('Redis connection string:', redisConnectionString);
 		await redisClient.connect();
 		console.log('Successfully connected to redis.');
 	} catch (error) {
